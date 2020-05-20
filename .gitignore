@@ -104,3 +104,11 @@ ENV/
 data/
 
 .idea
+
+# VS Code
+.devcontainer/
+.vscode/
+
+# Trained model
+model/
+db.sqlite3

@@ -8,11 +8,11 @@ from nltk.corpus import stopwords
 
 # Paths for all resources for the bot.
 RESOURCE_PATH = {
-    'INTENT_RECOGNIZER': 'intent_recognizer.pkl',
-    'TAG_CLASSIFIER': 'tag_classifier.pkl',
-    'TFIDF_VECTORIZER': 'tfidf_vectorizer.pkl',
-    'THREAD_EMBEDDINGS_FOLDER': 'thread_embeddings_by_tags',
-    'WORD_EMBEDDINGS': 'word_embeddings.tsv',
+    'INTENT_RECOGNIZER': 'model/intent_recognizer.pkl',
+    'TAG_CLASSIFIER': 'model/tag_classifier.pkl',
+    'TFIDF_VECTORIZER': 'model/tfidf_vectorizer.pkl',
+    'THREAD_EMBEDDINGS_FOLDER': 'model/thread_embeddings_by_tags',
+    'WORD_EMBEDDINGS': 'model/word_embeddings.tsv',
 }
 
 
@@ -42,35 +42,33 @@ def load_embeddings(embeddings_path):
       embeddings_dim - dimension of the vectors.
     """
 
-    # Hint: you have already implemented a similar routine in the 3rd assignment.
-    # Note that here you also need to know the dimension of the loaded embeddings.
-    # When you load the embeddings, use numpy.float32 type as dtype
-
-    ########################
-    #### YOUR CODE HERE ####
-    ########################
-
-    # remove this when you're done
-    raise NotImplementedError(
-        "Open utils.py and fill with your code. In case of Google Colab, download"
-        "(https://github.com/hse-aml/natural-language-processing/blob/master/project/utils.py), "
-        "edit locally and upload using '> arrow on the left edge' -> Files -> UPLOAD")
+    embeddings = dict()
+    embeddings_dim = -1
+    for line in open(embeddings_path):
+        word, *embedding = line.split('\t')
+        embeddings[word] = np.array([float(x) for x in embedding], dtype=np.float32)
+        if embeddings_dim < 0:
+            embeddings_dim = len(embedding)
+        elif embeddings_dim != len(embedding):
+            raise ValueError('Embeddings have different dimensions. Current embeddings dim is set to {}, while last loaded is of dim {}.'.format(embeddings_dim, len(embedding)))
+    
+    return embeddings, embeddings_dim
 
 
 def question_to_vec(question, embeddings, dim):
-    """Transforms a string to an embedding by averaging word embeddings."""
+    """
+        question: a string
+        embeddings: dict where the key is a word and a value is its' embedding
+        dim: size of the representation
 
-    # Hint: you have already implemented exactly this function in the 3rd assignment.
-
-    ########################
-    #### YOUR CODE HERE ####
-    ########################
-
-    # remove this when you're done
-    raise NotImplementedError(
-        "Open utils.py and fill with your code. In case of Google Colab, download"
-        "(https://github.com/hse-aml/natural-language-processing/blob/master/project/utils.py), "
-        "edit locally and upload using '> arrow on the left edge' -> Files -> UPLOAD")
+        result: vector representation for the question, as an averate of word embeddings
+    """
+    wv_sum, count = np.zeros(shape=dim), 0
+    for word in question.split():
+      if word in embeddings:
+        wv_sum += embeddings[word]
+        count += 1
+    return wv_sum / count if count > 0 else wv_sum
 
 
 def unpickle_file(filename):
