@@ -31,10 +31,7 @@ class ThreadRanker(object):
 class DialogueManager(object):
     def __init__(self, paths):
         print("Loading resources...")
-
-        # Intent recognition:
-        self.intent_recognizer = unpickle_file(paths['INTENT_RECOGNIZER'])
-        self.tfidf_vectorizer = unpickle_file(paths['TFIDF_VECTORIZER'])
+        self.paths = paths
 
         self.ANSWER_TEMPLATE = 'I think its about %s\nThis thread might help you: https://stackoverflow.com/questions/%s'
 
@@ -57,6 +54,14 @@ class DialogueManager(object):
         
         trainer = ChatterBotCorpusTrainer(self.chatbot)
         trainer.train('chatterbot.corpus.english')
+
+    def __get_tfidf_features(self, prepared_question):
+        tfidf_vectorizer = unpickle_file(self.paths['TFIDF_VECTORIZER'])
+        return tfidf_vectorizer.transform([prepared_question])
+    
+    def __get_intent(self, features):
+        intent_recognizer = unpickle_file(self.paths['INTENT_RECOGNIZER'])
+        return intent_recognizer.predict(features)[0]
        
     def generate_answer(self, question):
         """Combines stackoverflow and chitchat parts using intent recognition."""
@@ -65,8 +70,8 @@ class DialogueManager(object):
         # Don't forget to prepare question and calculate features for the question.
         
         prepared_question = text_prepare(question)
-        features = self.tfidf_vectorizer.transform([prepared_question])
-        intent = self.intent_recognizer.predict(features)[0]
+        features = self.__get_tfidf_features(prepared_question)
+        intent = self.__get_intent(features)
 
         # Chit-chat part:
         if intent == 'dialogue':
