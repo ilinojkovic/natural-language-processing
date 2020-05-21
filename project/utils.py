@@ -1,3 +1,4 @@
+import gzip
 import nltk
 import pickle
 import re
@@ -73,5 +74,9 @@ def question_to_vec(question, embeddings, dim):
 
 def unpickle_file(filename):
     """Returns the result of unpickling the file content."""
-    with open(filename, 'rb') as f:
-        return pickle.load(f)
+    try:
+        with gzip.open(filename, 'rb') as f:
+            return pickle.load(f)
+    except OSError:
+        with open(filename, 'rb') as f:
+            return pickle.load(f)

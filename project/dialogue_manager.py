@@ -21,8 +21,6 @@ class ThreadRanker(object):
             The search is performed across the threads with a given tag.
         """
         thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
-
-        # HINT: you have already implemented a similar routine in the 3rd assignment.
         
         question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
         best_thread = pairwise_distances_argmin(X=[question_vec], Y=thread_embeddings, metric='cosine')[0]
