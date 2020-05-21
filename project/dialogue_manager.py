@@ -1,5 +1,5 @@
 import os
-from sklearn.metrics.pairwise import pairwise_distances_argmin
+from sklearn.metrics.pairwise import pairwise_distances_argmin_min
 
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -23,7 +23,15 @@ class ThreadRanker(object):
         thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
         
         question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
-        best_thread = pairwise_distances_argmin(X=[question_vec], Y=thread_embeddings, metric='cosine')[0]
+
+        n = int(len(thread_ids) / 2)
+        best_thread1, dist1 = pairwise_distances_argmin_min(question_vec.reshape((1, self.embeddings_dim)), thread_embeddings[:n, :], metric='cosine')
+        best_thread2, dist2 = pairwise_distances_argmin_min(question_vec.reshape((1, self.embeddings_dim)), thread_embeddings[n:, :], metric='cosine')
+
+        if dist1[0] <= dist2[0]:
+            best_thread = best_thread1[0]
+        else:
+            best_thread = best_thread2[0] + n
         
         return thread_ids[best_thread]
 
