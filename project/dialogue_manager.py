@@ -68,7 +68,6 @@ class DialogueManager(object):
         
         prepared_question = text_prepare(question)
         features = self.tfidf_vectorizer.transform([prepared_question])
-        print(features)
         intent = self.intent_recognizer.predict(features)[0]
 
         # Chit-chat part:
